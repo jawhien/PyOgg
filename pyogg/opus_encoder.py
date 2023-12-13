@@ -25,9 +25,7 @@ class OpusEncoder:
 
     def set_channels(self, n: int) -> None:
         """Set the number of channels.
-
         n must be either 1 or 2.
-
         """
         if self._encoder is None:
             if n < 0 or n > 2:
@@ -45,16 +43,13 @@ class OpusEncoder:
 
     def set_sampling_frequency(self, samples_per_second: int) -> None:
         """Set the number of samples (per channel) per second.
-
         This must be one of 8000, 12000, 16000, 24000, or 48000.
-
         Regardless of the sampling rate and number of channels
         selected, the Opus encoder can switch to a lower audio
         bandwidth or number of channels if the bitrate selected is
         too low. This also means that it is safe to always use 48
         kHz stereo input and let the encoder optimize the
         encoding.
-
         """
         if self._encoder is None:
             if samples_per_second in [8000, 12000, 16000, 24000, 48000]:
@@ -74,9 +69,7 @@ class OpusEncoder:
 
     def set_application(self, application: str) -> None:
         """Set the encoding mode.
-
         This must be one of 'voip', 'audio', or 'restricted_lowdelay'.
-
         'voip': Gives best quality at a given bitrate for voice
         signals. It enhances the input signal by high-pass
         filtering and emphasizing formants and
@@ -85,12 +78,10 @@ class OpusEncoder:
         for typical VoIP applications. Because of the enhancement,
         even at high bitrates the output may sound different from
         the input.
-
         'audio': Gives best quality at a given bitrate for most
         non-voice signals like music. Use this mode for music and
         mixed (music/voice) content, broadcast, and applications
         requiring less than 15 ms of coding delay.
-
         'restricted_lowdelay': configures low-delay mode that
         disables the speech-optimized mode in exchange for
         slightly reduced delay. This mode can only be set on an
@@ -117,13 +108,10 @@ class OpusEncoder:
 
     def set_max_bytes_per_frame(self, max_bytes: int) -> None:
         """Set the maximum number of bytes in an encoded frame.
-
         Size of the output payload. This may be used to impose an
         upper limit on the instant bitrate, but should not be used
         as the only bitrate control.
-
         TODO: Use OPUS_SET_BITRATE to control the bitrate.
-
         """
         self._max_bytes_per_frame = opus.opus_int32(max_bytes)
         OutputBuffer = ctypes.c_ubyte * max_bytes
@@ -132,17 +120,70 @@ class OpusEncoder:
             ctypes.cast(ctypes.pointer(self._output_buffer),
                         ctypes.POINTER(ctypes.c_ubyte))
         )
-        
+
+    def set_bitrates(self, bitrate: int) -> None:
+        # If we haven't already created an encoder, do so now
+        if self._encoder is None:
+            self._encoder = self._create_encoder()
+
+        result = opus.opus_encoder_ctl(
+            self._encoder,
+            opus.OPUS_SET_BITRATE_REQUEST,
+            bitrate
+        )
+        if result != opus.OPUS_OK:
+            raise PyOggError(
+                "Failed to set bitrates " +
+                "the Opus encoder: " +
+                opus.opus_strerror(result).decode("utf")
+            )
+
+    def set_bandwidth(self, bandwidth="fullband") -> None:
+        """
+        narrowband:
+        Narrowband typically refers to a limited range of frequencies suitable for voice communication.
+        mediumband (unsupported in libopus 1.3+):
+        Mediumband extends the frequency range compared to narrowband, providing better audio quality.
+        wideband:
+        Wideband offers an even broader frequency range, resulting in higher audio fidelity compared to narrowband and mediumband.
+        superwideband:
+        Superwideband extends the frequency range beyond wideband, further enhancing audio quality.
+        fullband (default):
+        Fullband provides the widest frequency range among the listed options, offering the highest audio quality.
+        """
+        # If we haven't already created an encoder, do so now
+        if self._encoder is None:
+            self._encoder = self._create_encoder()
+
+        if bandwidth == "narrowband":
+            reqband = opus.OPUS_BANDWIDTH_NARROWBAND
+        elif bandwidth == "mediumband":
+            reqband = opus.OPUS_BANDWIDTH_MEDIUMBAND
+        elif bandwidth == "wideband":
+            reqband = opus.OPUS_BANDWIDTH_WIDEBAND
+        elif bandwidth == "superwideband":
+            reqband = opus.OPUS_BANDWIDTH_SUPERWIDEBAND
+        else:
+            reqband = opus.OPUS_BANDWIDTH_FULLBAND
+
+        result = opus.opus_encoder_ctl(
+            self._encoder,
+            opus.OPUS_SET_BANDWIDTH_REQUEST,
+            reqband
+        )
+        if result != opus.OPUS_OK:
+            raise PyOggError(
+                "Failed to set bandwidth " +
+                "the Opus encoder: " +
+                opus.opus_strerror(result).decode("utf")
+            )
         
     def encode(self, pcm: Union[bytes, bytearray, memoryview]) -> memoryview:
         """Encodes PCM data into an Opus frame.
-
         `pcm` must be formatted as bytes-like, with each sample taking
         two bytes (signed 16-bit integers; interleaved left, then
         right channels if in stereo).
-
         If `pcm` is not writeable, a copy of the array will be made.
-
         """
         # If we haven't already created an encoder, do so now
         if self._encoder is None:
@@ -250,20 +291,17 @@ class OpusEncoder:
     
     def get_algorithmic_delay(self):
         """Gets the total samples of delay added by the entire codec.
-
         This can be queried by the encoder and then the provided
         number of samples can be skipped on from the start of the
         decoder's output to provide time aligned input and
         output. From the perspective of a decoding application the
         real data begins this many samples late.
-
         The decoder contribution to this delay is identical for all
         decoders, but the encoder portion of the delay may vary from
         implementation to implementation, version to version, or even
         depend on the encoder's initial configuration. Applications
         needing delay compensation should call this method rather than
         hard-coding a value.
-
         """
         # If we haven't already created an encoder, do so now
         if self._encoder is None:
@@ -286,6 +324,7 @@ class OpusEncoder:
             )
         delay_samples = delay.value
         return delay_samples
+
 
     
     #
