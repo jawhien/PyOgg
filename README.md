@@ -1,13 +1,13 @@
 # PyOgg
 
-PyOgg provides Python bindings for Xiph.org’s Opus, Vorbis and FLAC
-audio file formats as well as their Ogg container format.
-
 To install
 
 ```
 pip install git+https://github.com/damp11113/PyOgg.git
 ```
+
+PyOgg provides Python bindings for Xiph.org’s Opus, Vorbis and FLAC
+audio file formats as well as their Ogg container format.
 
 PyOgg:
 
