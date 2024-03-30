@@ -189,8 +189,22 @@ __here = os.getcwd()
 libopus = None
 
 try:
+    os.environ["pyogg_win_libopus_version"]
+except:
+    os.environ["pyogg_win_libopus_version"] = "stable"
+
+opusversion = os.environ["pyogg_win_libopus_version"]
+
+if opusversion == "exper":
+    winopusversionfile = "opus151.dll"
+elif opusversion == "old":
+    winopusversionfile = "opus131.dll"
+else:
+    winopusversionfile = "opus.dll"
+
+try:
     names = {
-        "Windows": "opus.dll",
+        "Windows": winopusversionfile,
         "Darwin": "libopus.0.dylib",
         "external": "opus"
     }
@@ -329,13 +343,19 @@ OPUS_SET_GAIN_REQUEST                =4034
 OPUS_GET_GAIN_REQUEST                =4045
 OPUS_SET_LSB_DEPTH_REQUEST           =4036
 OPUS_GET_LSB_DEPTH_REQUEST           =4037
-OPUS_GET_LAoe_pACKET_DURATION_REQUEST =4039
+OPUS_GET_LAST_PACKET_DURATION_REQUEST =4039
 OPUS_SET_EXPERT_FRAME_DURATION_REQUEST =4040
 OPUS_GET_EXPERT_FRAME_DURATION_REQUEST =4041
 OPUS_SET_PREDICTION_DISABLED_REQUEST =4042
 OPUS_GET_PREDICTION_DISABLED_REQUEST =4043
 OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST =4046
 OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST =4047
+# opus 1.5
+OPUS_GET_IN_DTX_REQUEST              = 4049
+OPUS_SET_DRED_DURATION_REQUEST       = 4050
+OPUS_GET_DRED_DURATION_REQUEST       = 4051
+OPUS_SET_DNN_BLOB_REQUEST            = 4052
+OPUS_GET_DNN_BLOB_REQUEST            = 4053
 
 OPUS_AUTO                           =-1000
 OPUS_BITRATE_MAX                     =  -1
