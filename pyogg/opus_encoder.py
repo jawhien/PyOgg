@@ -152,10 +152,14 @@ class OpusEncoder:
                 opus.opus_strerror(result).decode("utf")
             )
 
-    def set_bitrate_mode(self, mode="CBR") -> None:
+    def set_bitrate_mode(self, mode="CVBR") -> None:
+        """VBR, CVBR, CBR"""
+
         # If we haven't already created an encoder, do so now
         if self._encoder is None:
             self._encoder = self._create_encoder()
+
+        mode = mode.upper()
 
         if mode == "CBR":
             result = opus.opus_encoder_ctl(
@@ -166,7 +170,7 @@ class OpusEncoder:
             result = opus.opus_encoder_ctl(
                 self._encoder,
                 opus.OPUS_SET_VBR_CONSTRAINT_REQUEST,
-                1
+                0
             )
         elif mode == "VBR":
             result = opus.opus_encoder_ctl(
@@ -188,7 +192,7 @@ class OpusEncoder:
             result = opus.opus_encoder_ctl(
                 self._encoder,
                 opus.OPUS_SET_VBR_CONSTRAINT_REQUEST,
-                0
+                1
             )
 
         if result != opus.OPUS_OK:
@@ -216,6 +220,7 @@ class OpusEncoder:
             )
 
     def set_compresion_complex(self, complex=5) -> None:
+        """complex 0-10 low-hires"""
         # If we haven't already created an encoder, do so now
         if self._encoder is None:
             self._encoder = self._create_encoder()
@@ -234,6 +239,24 @@ class OpusEncoder:
                 "the Opus encoder: " +
                 opus.opus_strerror(result).decode("utf")
             )
+
+    def CTL(self, request, *args) -> None:
+        # If we haven't already created an encoder, do so now
+        if self._encoder is None:
+            self._encoder = self._create_encoder()
+
+        result = opus.opus_encoder_ctl(
+            self._encoder,
+            request,
+            *args
+        )
+        if result != opus.OPUS_OK:
+            raise PyOggError(
+                f"Failed to {request} " +
+                "the Opus encoder: " +
+                opus.opus_strerror(result).decode("utf")
+            )
+        return result
 
     def set_bandwidth(self, bandwidth="fullband") -> None:
         """
