@@ -1,5 +1,6 @@
 import ctypes
 from typing import Optional, Union, ByteString
+import os
 
 from . import opus
 from .pyogg_error import PyOggError
@@ -153,7 +154,9 @@ class OpusEncoder:
             )
 
     def set_bitrate_mode(self, mode="CVBR") -> None:
-        """VBR, CVBR, CBR"""
+        """VBR, CVBR, CBR
+        VBR in 1.5.x replace by CVBR
+        """
 
         # If we haven't already created an encoder, do so now
         if self._encoder is None:
@@ -270,6 +273,7 @@ class OpusEncoder:
         Superwideband extends the frequency range beyond wideband, further enhancing audio quality.
         fullband (default):
         Fullband provides the widest frequency range among the listed options, offering the highest audio quality.
+        auto: opus is working auto not force
         """
         # If we haven't already created an encoder, do so now
         if self._encoder is None:
@@ -283,6 +287,8 @@ class OpusEncoder:
             reqband = opus.OPUS_BANDWIDTH_WIDEBAND
         elif bandwidth == "superwideband":
             reqband = opus.OPUS_BANDWIDTH_SUPERWIDEBAND
+        elif bandwidth == "auto":
+            reqband = opus.OPUS_AUTO
         else:
             reqband = opus.OPUS_BANDWIDTH_FULLBAND
 
@@ -332,12 +338,20 @@ class OpusEncoder:
         )
 
         # Check that we have a valid frame size
-        if int(frame_duration) not in [25, 50, 100, 200, 400, 600]:
-            raise PyOggError(
-                "The effective frame duration ({:.1f} ms) "
-                .format(frame_duration/10)+
-                "was not one of the acceptable values."
-            )
+        if os.environ["pyogg_win_libopus_version"] == "hev2":
+            if int(frame_duration) not in [25, 50, 100, 200, 400, 600, 800, 1000, 1200]:
+                raise PyOggError(
+                    "The effective frame duration ({:.1f} ms) "
+                    .format(frame_duration / 10) +
+                    "was not one of the acceptable values."
+                )
+        else:
+            if int(frame_duration) not in [25, 50, 100, 200, 400, 600]:
+                raise PyOggError(
+                    "The effective frame duration ({:.1f} ms) "
+                    .format(frame_duration / 10) +
+                    "was not one of the acceptable values."
+                )
 
         # Create a ctypes object sharing the memory of the PCM data
         PcmCtypes = ctypes.c_ubyte * len(pcm)
@@ -408,7 +422,7 @@ class OpusEncoder:
             buf,
             ctypes.POINTER(ctypes.c_ubyte)
         )
-        
+
         return valid_data_as_bytes
 
     def get_algorithmic_delay(self):
@@ -449,6 +463,16 @@ class OpusEncoder:
             )
         delay_samples = delay.value
         return delay_samples
+
+    def close(self):
+        result = opus.opus_encoder_destroy(self._encoder)
+
+        if result != opus.OPUS_OK:
+            raise PyOggError(
+                "Failed to obtain the algorithmic delay of "+
+                "the Opus encoder: "+
+                opus.opus_strerror(result).decode("utf")
+            )
     
     #
     # Internal methods
@@ -518,3 +542,5 @@ class OpusEncoder:
 
         # Return our newly-created encoder
         return encoder
+
+
