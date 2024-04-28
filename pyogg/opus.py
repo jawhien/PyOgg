@@ -81,7 +81,12 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-
+############################################################
+# Freac license:                                           #
+############################################################
+"""
+https://github.com/enzo1982/freac?tab=GPL-2.0-1-ov-file#GPL-2.0-1-ov-file
+"""
 ############################################################
 # OpenSSL license:                                         #
 ############################################################
@@ -193,12 +198,27 @@ try:
 except:
     os.environ["pyogg_win_libopus_version"] = "stable"
 
+try:
+    os.environ["pyogg_win_libopus_custom_path"]
+except:
+    os.environ["pyogg_win_libopus_custom_path"] = ""
+
 opusversion = os.environ["pyogg_win_libopus_version"]
 
 if opusversion == "exper":
     winopusversionfile = "opus151.dll"
+elif opusversion == "he":
+    winopusversionfile = "heopus.dll"
+elif opusversion == "hev2":
+    winopusversionfile = "heopusv2.dll"
 elif opusversion == "old":
     winopusversionfile = "opus131.dll"
+elif opusversion == "drm":
+    winopusversionfile = "drmopus.dll"
+elif opusversion == "custom":
+    winopusversionfile = os.environ["pyogg_win_libopus_custom_path"]
+    if winopusversionfile == "":
+        raise FileNotFoundError("libopus file custom not found")
 else:
     winopusversionfile = "opus.dll"
 
@@ -311,50 +331,50 @@ OP_PIC_FORMAT_GIF     =(3)
 
 OPUS_CHANNEL_COUNT_MAX =(255)
 
-OPUS_SET_APPLICATION_REQUEST         =4000
+OPUS_SET_APPLICATION_REQUEST         =4000 # Set Application (voip 2048, audio 2049, lowdelay 2051)
 OPUS_GET_APPLICATION_REQUEST         =4001
-OPUS_SET_BITRATE_REQUEST             =4002
+OPUS_SET_BITRATE_REQUEST             =4002 # Set Bitrates (bitrate x 100)
 OPUS_GET_BITRATE_REQUEST             =4003
-OPUS_SET_MAX_BANDWIDTH_REQUEST       =4004
+OPUS_SET_MAX_BANDWIDTH_REQUEST       =4004 # Set Max Bandwidth
 OPUS_GET_MAX_BANDWIDTH_REQUEST       =4005
-OPUS_SET_VBR_REQUEST                 =4006
+OPUS_SET_VBR_REQUEST                 =4006 # Enable VBR
 OPUS_GET_VBR_REQUEST                 =4007
-OPUS_SET_BANDWIDTH_REQUEST           =4008
+OPUS_SET_BANDWIDTH_REQUEST           =4008 # Set Bandwidth
 OPUS_GET_BANDWIDTH_REQUEST           =4009
-OPUS_SET_COMPLEXITY_REQUEST          =4010
+OPUS_SET_COMPLEXITY_REQUEST          =4010 # Set Compression Complex (0-10)
 OPUS_GET_COMPLEXITY_REQUEST          =4011
-OPUS_SET_INBAND_FEC_REQUEST          =4012
+OPUS_SET_INBAND_FEC_REQUEST          =4012 # Enable FEC (Forward Error Correction)
 OPUS_GET_INBAND_FEC_REQUEST          =4013
-OPUS_SET_PACKET_LOSS_PERC_REQUEST    =4014
+OPUS_SET_PACKET_LOSS_PERC_REQUEST    =4014 # Set Packets Loss (0-100%)
 OPUS_GET_PACKET_LOSS_PERC_REQUEST    =4015
-OPUS_SET_DTX_REQUEST                 =4016
+OPUS_SET_DTX_REQUEST                 =4016 # Enable DTX (Discontinuous Transmission)
 OPUS_GET_DTX_REQUEST                 =4017
-OPUS_SET_VBR_CONSTRAINT_REQUEST      =4020
+OPUS_SET_VBR_CONSTRAINT_REQUEST      =4020 # Enable CVBR (Require enable VBR)
 OPUS_GET_VBR_CONSTRAINT_REQUEST      =4021
-OPUS_SET_FORCE_CHANNELS_REQUEST      =4022
+OPUS_SET_FORCE_CHANNELS_REQUEST      =4022 # Set Channel (1-255)
 OPUS_GET_FORCE_CHANNELS_REQUEST      =4023
-OPUS_SET_SIGNAL_REQUEST              =4024
+OPUS_SET_SIGNAL_REQUEST              =4024 # IDK
 OPUS_GET_SIGNAL_REQUEST              =4025
 OPUS_GET_LOOKAHEAD_REQUEST           =4027
 OPUS_GET_SAMPLE_RATE_REQUEST         =4029
 OPUS_GET_FINAL_RANGE_REQUEST         =4031
 OPUS_GET_PITCH_REQUEST               =4033
-OPUS_SET_GAIN_REQUEST                =4034
+OPUS_SET_GAIN_REQUEST                =4034 # Set Gains
 OPUS_GET_GAIN_REQUEST                =4045
-OPUS_SET_LSB_DEPTH_REQUEST           =4036
+OPUS_SET_LSB_DEPTH_REQUEST           =4036 # IDK
 OPUS_GET_LSB_DEPTH_REQUEST           =4037
 OPUS_GET_LAST_PACKET_DURATION_REQUEST =4039
-OPUS_SET_EXPERT_FRAME_DURATION_REQUEST =4040
+OPUS_SET_EXPERT_FRAME_DURATION_REQUEST =4040 # Set Framesizes
 OPUS_GET_EXPERT_FRAME_DURATION_REQUEST =4041
-OPUS_SET_PREDICTION_DISABLED_REQUEST =4042
+OPUS_SET_PREDICTION_DISABLED_REQUEST =4042 # Disable Prediction
 OPUS_GET_PREDICTION_DISABLED_REQUEST =4043
-OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST =4046
+OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST =4046 # Disable Stereo Phase Inversion
 OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST =4047
 # opus 1.5
 OPUS_GET_IN_DTX_REQUEST              = 4049
-OPUS_SET_DRED_DURATION_REQUEST       = 4050
+OPUS_SET_DRED_DURATION_REQUEST       = 4050 # Enable AI DRED
 OPUS_GET_DRED_DURATION_REQUEST       = 4051
-OPUS_SET_DNN_BLOB_REQUEST            = 4052
+OPUS_SET_DNN_BLOB_REQUEST            = 4052 # IDK
 OPUS_GET_DNN_BLOB_REQUEST            = 4053
 
 OPUS_AUTO                           =-1000
