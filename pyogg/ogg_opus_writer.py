@@ -318,7 +318,7 @@ class OggOpusWriter():
 
         """
         signature = b"OpusTags"
-        vendor_string = b"Python - PyOgg (damp11113 moded)"
+        vendor_string = f"PyOgg for Easygram, {opus.opus_get_version_string().decode()}".encode()
         vendor_string_length = struct.pack("<I",len(vendor_string))
         user_comments_length = struct.pack("<I",0)
 
